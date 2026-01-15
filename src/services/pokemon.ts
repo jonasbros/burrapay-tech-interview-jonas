@@ -8,24 +8,36 @@ const POKEAPI_RATE_LIMIT = 10
 // Rate limiter
 const limit = pLimit(POKEAPI_RATE_LIMIT)
 
-// Fetch Pokemon data from PokeAPI using TaskEither with rate limiting
+// In-memory cache
+const pokemonCache = new Map<string, PokemonApiResponse>()
+
+// Fetch Pokemon data with caching, rate limiting
 export const fetchPokemon = (
   name: string
 ): TE.TaskEither<string, PokemonApiResponse> =>
   TE.tryCatch(
-    () =>
-      limit(async () => {
-        const response = await fetch(
-          `${POKEAPI_BASE_URL}/${name.toLowerCase()}`
-        )
+    async () => {
+      const key = name.toLowerCase()
 
-        if (!response.ok) {
-          throw new Error('Name is not a valid Pokemon')
-        }
+      // Return cached version if available
+      if (pokemonCache.has(key)) {
+        return pokemonCache.get(key)!
+      }
 
-        const data = await response.json()
-        return data as PokemonApiResponse
-      }),
+      // Rate-limited fetch
+      const response = await limit(() => fetch(`${POKEAPI_BASE_URL}/${key}`))
+
+      if (!response.ok) {
+        throw new Error('Name is not a valid Pokemon')
+      }
+
+      const data = (await response.json()) as PokemonApiResponse
+
+      // Store in cache
+      pokemonCache.set(key, data)
+
+      return data
+    },
     (error) => (error instanceof Error ? error.message : String(error))
   )
 
