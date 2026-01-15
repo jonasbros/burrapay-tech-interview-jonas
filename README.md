@@ -7,10 +7,12 @@ A TypeScript Fastify API for managing tournaments and players, demonstrating fun
 You need to complete the implementation of a basic tournament management API with the following features:
 
 ### Core Endpoints
+
 1. `POST /tournaments` - Create a new tournament
 2. `POST /tournaments/:tournamentId/players` - Add a player to a tournament
 
 ### 🎯 Special Requirement: Pokemon-Only Players
+
 As part of this technical assessment, **ONLY Pokemon can be added as players**. Integrate with the [PokeAPI](https://pokeapi.co/) to enforce this:
 
 - When adding a player, the `name` provided MUST be a valid Pokemon name
@@ -22,6 +24,7 @@ As part of this technical assessment, **ONLY Pokemon can be added as players**. 
 ## 🚀 Getting Started
 
 ### Prerequisites
+
 - **Node.js v22+** (Required for Fastify v5 compatibility)
   - Use `nvm use 22` to switch to Node.js 22
   - Verify with `node --version` (should show v22.x.x)
@@ -30,6 +33,7 @@ As part of this technical assessment, **ONLY Pokemon can be added as players**. 
   - Or use `corepack enable` if using Node.js 16.10+
 
 ### Installation
+
 ```bash
 # Install dependencies (already done)
 pnpm install
@@ -68,10 +72,10 @@ src/
 
 ### Task 1: Complete Tournament Routes (`src/routes/tournaments.ts`)
 
-- [ ] Implement `POST /tournaments` endpoint
-- [ ] Use the provided `fp-ts Either` pattern example
-- [ ] Return appropriate HTTP status codes (201 for success, 400 for errors)
-- [ ] Transform response to match `TournamentResponse` interface
+- [x] Implement `POST /tournaments` endpoint
+- [x] Use the provided `fp-ts Either` pattern example
+- [x] Return appropriate HTTP status codes (201 for success, 400 for errors)
+- [x] Transform response to match `TournamentResponse` interface
 
 ### Task 2: Complete Player Routes (`src/routes/players.ts`)
 
@@ -144,7 +148,8 @@ import * as TE from 'fp-ts/lib/TaskEither'
 
 const fetchPokemon = (name: string): TE.TaskEither<string, Pokemon> =>
   TE.tryCatch(
-    () => fetch(`https://pokeapi.co/api/v2/pokemon/${name}`).then(r => r.json()),
+    () =>
+      fetch(`https://pokeapi.co/api/v2/pokemon/${name}`).then((r) => r.json()),
     (error) => `Failed to fetch Pokemon: ${error}`
   )
 ```
@@ -290,6 +295,7 @@ If you encounter errors like `diagnostics.tracingChannel is not a function`:
 ### PNPM Issues
 
 If PNPM commands fail:
+
 - Install PNPM: `npm install -g pnpm`
 - Or enable corepack: `corepack enable`
 - Clear cache: `pnpm store prune`
