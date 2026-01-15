@@ -2,8 +2,6 @@ import Fastify from 'fastify'
 import { tournamentRoutes } from './routes/tournaments.ts'
 import { playerRoutes } from './routes/players.ts'
 
-// TODO for interviewee: Set up the main Fastify server
-
 async function buildServer() {
   const fastify = Fastify({ logger: true })
 
@@ -12,7 +10,7 @@ async function buildServer() {
   await fastify.register(playerRoutes, { prefix: '/api' })
 
   // Basic health check endpoint (already implemented)
-  fastify.get('/health', async (request, reply) => {
+  fastify.get('/health', async () => {
     return { status: 'OK', timestamp: new Date().toISOString() }
   })
 
@@ -34,6 +32,4 @@ async function start() {
   }
 }
 
-start()
-
-export { buildServer, start }
+export { start }
