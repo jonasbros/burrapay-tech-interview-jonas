@@ -25,14 +25,14 @@ export async function playerRoutes(fastify: FastifyInstance) {
         (error) => async () => {
           const statusCode = error === 'Tournament not found' ? 404 : 400
           fastify.log.warn(
-            { error, tournamentId, requestBody: request.body },
+            { error, tournamentId, reqId: request.id },
             'Failed to add player'
           )
           return reply.status(statusCode).send({ error })
         },
         (player) => async () => {
           fastify.log.info(
-            { playerId: player.id, tournamentId },
+            { playerId: player.id, tournamentId, reqId: request.id },
             'Player added successfully'
           )
           return reply.status(201).send(player)

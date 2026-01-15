@@ -26,15 +26,7 @@ export const fetchPokemon = (
         const data = await response.json()
         return data as PokemonApiResponse
       }),
-    (error) => {
-      if (
-        error instanceof Error &&
-        error.message === 'Name is not a valid Pokemon'
-      ) {
-        return 'Name is not a valid Pokemon'
-      }
-      return `Failed to validate Pokemon: ${error}`
-    }
+    (error) => (error instanceof Error ? error.message : String(error))
   )
 
 // Extract Pokemon data needed for player creation

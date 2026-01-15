@@ -19,14 +19,14 @@ export async function tournamentRoutes(fastify: FastifyInstance) {
         E.fold(
           (error) => {
             fastify.log.warn(
-              { error, requestBody: request.body },
+              { error, reqId: request.id },
               'Failed to create tournament'
             )
             return reply.status(400).send({ error })
           },
           (tournament) => {
             fastify.log.info(
-              { tournamentId: tournament.id },
+              { tournamentId: tournament.id, reqId: request.id },
               'Tournament created successfully'
             )
             return reply.status(201).send(tournament)
@@ -41,7 +41,10 @@ export async function tournamentRoutes(fastify: FastifyInstance) {
     const tournaments = Array.from(storage.tournaments.values())
     const response = tournaments.map(toTournamentResponse)
 
-    fastify.log.info({ count: response.length }, 'Retrieved tournaments list')
+    fastify.log.info(
+      { count: response.length, reqId: request.id },
+      'Retrieved tournaments list'
+    )
     return reply.status(200).send(response)
   })
 
@@ -56,12 +59,15 @@ export async function tournamentRoutes(fastify: FastifyInstance) {
         O.map(toTournamentResponse),
         O.fold(
           () => {
-            fastify.log.warn({ tournamentId: id }, 'Tournament not found')
+            fastify.log.warn(
+              { tournamentId: id, reqId: request.id },
+              'Tournament not found'
+            )
             return reply.status(404).send({ error: 'Tournament not found' })
           },
           (tournament) => {
             fastify.log.info(
-              { tournamentId: id },
+              { tournamentId: id, reqId: request.id },
               'Tournament retrieved successfully'
             )
             return reply.status(200).send(tournament)
