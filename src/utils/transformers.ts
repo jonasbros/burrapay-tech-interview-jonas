@@ -1,7 +1,20 @@
-import { Tournament, TournamentResponse } from '../types/index.ts'
+import {
+  Tournament,
+  TournamentResponse,
+  Player,
+  PlayerResponse,
+} from '../types/index.ts'
 
-export const toTournamentResponse = (tournament: Tournament): TournamentResponse => ({
+export const toTournamentResponse = (
+  tournament: Tournament
+): TournamentResponse => ({
   id: tournament.id,
   name: tournament.name,
-  createdAt: tournament.createdAt.toISOString()
+  createdAt: tournament.createdAt.toISOString(),
+})
+
+export const toPlayerResponse = (player: Player): PlayerResponse => ({
+  id: player.id,
+  name: player.name,
+  tournamentId: player.tournamentId,
 })

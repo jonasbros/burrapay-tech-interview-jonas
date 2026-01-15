@@ -1,32 +1,45 @@
-import { FastifyInstance, FastifyRequest, FastifyReply } from 'fastify'
+import { FastifyInstance } from 'fastify'
 import { pipe } from 'fp-ts/lib/function'
-import * as E from 'fp-ts/lib/Either'
-import * as O from 'fp-ts/lib/Option'
 import * as TE from 'fp-ts/lib/TaskEither'
-import { CreatePlayerRequest, PlayerResponse, PokemonApiResponse } from '../types/index.ts'
-import { createPlayer, getTournament } from '../storage/index.ts'
-
-// TODO for interviewee: Implement player routes using fp-ts patterns
-// CRITICAL REQUIREMENT: ONLY Pokemon can be added as players - reject all non-Pokemon names!
-
-// TODO: Implement Pokemon API validation function using TaskEither
-// const validatePokemon = (name: string): TE.TaskEither<string, PokemonApiResponse> => ...
+import { CreatePlayerRequest } from '../types/index.ts'
+import { validateCreatePlayerRequest } from '../validation/index.ts'
+import { validateTournamentExists } from '../services/tournament.ts'
+import { createPokemonPlayer } from '../services/player.ts'
+import { toPlayerResponse } from '../utils/transformers.ts'
 
 export async function playerRoutes(fastify: FastifyInstance) {
-  
-  // TODO: Implement POST /tournaments/:tournamentId/players endpoint
-  // REQUIREMENT: Only Pokemon names are allowed - validate using PokeAPI
-  
-  fastify.post<{ 
-    Params: { tournamentId: string }, 
-    Body: CreatePlayerRequest 
+  // POST /tournaments/:tournamentId/players - Add Pokemon player to tournament
+  fastify.post<{
+    Params: { tournamentId: string }
+    Body: CreatePlayerRequest
   }>('/tournaments/:tournamentId/players', async (request, reply) => {
-    
-    // TODO: Implement Pokemon validation and player creation logic
-    
-    reply.status(501).send({ error: 'Not implemented yet' })
-    
-    reply.status(501).send({ error: 'Not implemented yet' })
+    const { tournamentId } = request.params
+    const createPlayerTask = pipe(
+      TE.fromEither(validateCreatePlayerRequest(request.body)),
+      TE.tap(() => validateTournamentExists(tournamentId)),
+      TE.flatMap((validRequest) =>
+        createPokemonPlayer(validRequest.name, tournamentId)
+      ),
+      TE.map(toPlayerResponse),
+      TE.fold(
+        (error) => async () => {
+          const statusCode = error === 'Tournament not found' ? 404 : 400
+          fastify.log.warn(
+            { error, tournamentId, requestBody: request.body },
+            'Failed to add player'
+          )
+          return reply.status(statusCode).send({ error })
+        },
+        (player) => async () => {
+          fastify.log.info(
+            { playerId: player.id, tournamentId },
+            'Player added successfully'
+          )
+          return reply.status(201).send(player)
+        }
+      )
+    )
+
+    return createPlayerTask()
   })
-  
 }
