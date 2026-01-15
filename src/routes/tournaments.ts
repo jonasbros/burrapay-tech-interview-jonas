@@ -5,6 +5,7 @@ import * as O from 'fp-ts/lib/Option'
 import { CreateTournamentRequest } from '../types/index.ts'
 import { createTournament, getTournament, storage } from '../storage/index.ts'
 import { validateCreateTournamentRequest } from '../validation/index.ts'
+import { toTournamentResponse } from '../utils/transformers.ts'
 
 export async function tournamentRoutes(fastify: FastifyInstance) {
   // POST /tournaments - Create a new tournament
@@ -14,6 +15,7 @@ export async function tournamentRoutes(fastify: FastifyInstance) {
       return pipe(
         validateCreateTournamentRequest(request.body),
         E.flatMap((validRequest) => createTournament(validRequest.name)),
+        E.map(toTournamentResponse),
         E.fold(
           (error) => {
             fastify.log.warn(
@@ -37,12 +39,10 @@ export async function tournamentRoutes(fastify: FastifyInstance) {
   // GET /tournaments - List all tournaments
   fastify.get('/tournaments', async (request, reply) => {
     const tournaments = Array.from(storage.tournaments.values())
+    const response = tournaments.map(toTournamentResponse)
 
-    fastify.log.info(
-      { count: tournaments.length },
-      'Retrieved tournaments list'
-    )
-    return reply.status(200).send(tournaments)
+    fastify.log.info({ count: response.length }, 'Retrieved tournaments list')
+    return reply.status(200).send(response)
   })
 
   // GET /tournaments/:id - Get tournament by ID
@@ -53,6 +53,7 @@ export async function tournamentRoutes(fastify: FastifyInstance) {
 
       return pipe(
         getTournament(id),
+        O.map(toTournamentResponse),
         O.fold(
           () => {
             fastify.log.warn({ tournamentId: id }, 'Tournament not found')
