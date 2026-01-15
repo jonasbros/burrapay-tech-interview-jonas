@@ -1,9 +1,16 @@
 import Fastify from 'fastify'
+import rateLimit from '@fastify/rate-limit'
 import { tournamentRoutes } from './routes/tournaments.ts'
 import { playerRoutes } from './routes/players.ts'
 
 async function buildServer() {
   const fastify = Fastify({ logger: true })
+
+  // Register rate limiter (protect against DDoS)
+  await fastify.register(rateLimit, {
+    max: 100,
+    timeWindow: '1 minute',
+  })
 
   // Register routes
   await fastify.register(tournamentRoutes, { prefix: '/api' })
