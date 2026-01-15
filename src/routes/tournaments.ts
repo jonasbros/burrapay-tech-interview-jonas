@@ -1,4 +1,4 @@
-import { FastifyInstance, FastifyRequest, FastifyReply } from 'fastify'
+import { FastifyInstance } from 'fastify'
 import { pipe } from 'fp-ts/lib/function'
 import * as E from 'fp-ts/lib/Either'
 import * as O from 'fp-ts/lib/Option'
@@ -11,7 +11,7 @@ export async function tournamentRoutes(fastify: FastifyInstance) {
   // POST /tournaments - Create a new tournament
   fastify.post<{ Body: CreateTournamentRequest }>(
     '/tournaments',
-    async (request: FastifyRequest, reply: FastifyReply) => {
+    async (request, reply) => {
       return pipe(
         validateCreateTournamentRequest(request.body),
         E.flatMap((validRequest) => createTournament(validRequest.name)),
