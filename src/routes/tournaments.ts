@@ -14,7 +14,7 @@ export async function tournamentRoutes(fastify: FastifyInstance) {
     async (request, reply) => {
       return pipe(
         validateCreateTournamentRequest(request.body),
-        E.flatMap((validRequest) => createTournament(validRequest.name)),
+        E.flatMap((validRequest) => createTournament(validRequest)),
         E.map(toTournamentResponse),
         E.fold(
           (error) => {

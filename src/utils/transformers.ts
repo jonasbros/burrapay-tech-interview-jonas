@@ -10,6 +10,7 @@ export const toTournamentResponse = (
 ): TournamentResponse => ({
   id: tournament.id,
   name: tournament.name,
+  megaTournament: tournament.megaTournament,
   createdAt: tournament.createdAt.toISOString(),
 })
 

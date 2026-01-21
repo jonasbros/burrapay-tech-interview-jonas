@@ -14,20 +14,27 @@ export interface TournamentStorage {
 // Create initial storage
 export const createStorage = (): TournamentStorage => ({
   tournaments: new Map<string, Tournament>(),
-  players: new Map<string, Player>()
+  players: new Map<string, Player>(),
 })
 
 // Storage instance
 export const storage = createStorage()
 
 // Tournament operations
-export const createTournament = (name: string): Either<string, Tournament> => {
+export const createTournament = ({
+  name,
+  megaTournament,
+}: {
+  name: string
+  megaTournament: boolean
+}): Either<string, Tournament> => {
   const tournament: Tournament = {
     id: uuidv4(),
     name,
-    createdAt: new Date()
+    megaTournament,
+    createdAt: new Date(),
   }
-  
+
   storage.tournaments.set(tournament.id, tournament)
   return E.right(tournament)
 }
@@ -37,26 +44,34 @@ export const getTournament = (id: string): Option<Tournament> => {
 }
 
 // Player operations
-export const createPlayer = (name: string, tournamentId: string, pokemonData: {
-  id: number
-  types: string[]
-  height: number
-  weight: number
-}): Either<string, Player> => {
+export const createPlayer = (
+  name: string,
+  tournamentId: string,
+  pokemonData: {
+    id: number
+    types: string[]
+    height: number
+    weight: number
+  }
+): Either<string, Player> => {
   // Check if tournament exists
   const tournament = getTournament(tournamentId)
-  
+
   if (O.isNone(tournament)) {
     return E.left('Tournament not found')
   }
-  
+
+  if (tournament.value.megaTournament && !name.toLowerCase().includes('mega')) {
+    return E.left('Only Mega-Evolved pokemon are allowed.')
+  }
+
   const player: Player = {
     id: uuidv4(),
     name,
     tournamentId,
-    pokemonData
+    pokemonData,
   }
-  
+
   storage.players.set(player.id, player)
   return E.right(player)
 }
@@ -67,6 +82,6 @@ export const getPlayer = (id: string): Option<Player> => {
 
 export const getPlayersByTournament = (tournamentId: string): Player[] => {
   return Array.from(storage.players.values()).filter(
-    player => player.tournamentId === tournamentId
+    (player) => player.tournamentId === tournamentId
   )
 }
